@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:locallised_comms_app/components/phrase_button.dart';
 
+import '../models/Setup.dart';
+
 class HomePage extends StatefulWidget {
-  const HomePage({super.key, required this.title});
+  const HomePage({super.key, required this.title, required this.setup});
   final String title;
+  final Setup setup;
   @override
   _HomePageState createState() => _HomePageState();
 }

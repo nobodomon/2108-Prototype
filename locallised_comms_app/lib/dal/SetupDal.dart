@@ -2,9 +2,9 @@ import 'dart:io';
 
 import 'package:path_provider/path_provider.dart';
 
-import '../components/Setup.dart';
+import '../models/Setup.dart';
 
-class setup_dal {
+class SetupDal {
   Future<String> get _localPath async {
     final directory = await getApplicationDocumentsDirectory();
     return directory.path;
