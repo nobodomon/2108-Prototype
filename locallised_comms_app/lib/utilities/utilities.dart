@@ -12,19 +12,15 @@ class Utilities {
   }
 
   static Future<dynamic> getVoicesByLocale(String locale) async {
-    Future voices = FlutterTts().getVoices;
+    dynamic voices = await FlutterTts().getVoices;
     List<VoiceModel> voicesByLocale = [];
-    voices.then((value) => {
-          for (var voice in value)
-            {
-              print("L21: " + voice.toString()),
-              if (voice["locale"] == locale)
-                {
-                  voicesByLocale.add(
-                      VoiceModel(name: voice["name"], locale: voice["locale"]))
-                }
-            }
-        });
+
+    for (var voice in voices) {
+      if (voice["locale"] == locale) {
+        voicesByLocale
+            .add(VoiceModel(name: voice["name"], locale: voice["locale"]));
+      }
+    }
     return voicesByLocale;
   }
 }

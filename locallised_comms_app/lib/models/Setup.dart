@@ -4,7 +4,7 @@ class Setup {
   int layout;
   String language;
   String voice;
-  String speed;
+  double speed;
 
   Setup({
     required this.layout,

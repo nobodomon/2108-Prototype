@@ -24,26 +24,59 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  late Setup setup;
+  Future exists = SetupDal().exists();
+  Future<Setup>? setup;
   @override
   void initState() {
-    super.initState();
     SetupDal dal = SetupDal();
     dal.exists().then((value) async => {
-          if (value == false) {} else {setup = await dal.read()}
+          if (value == false)
+            {}
+          else
+            {
+              {
+                setup = dal.read(),
+              }
+            }
         });
     super.initState();
   }
 
-  setupCompleteCallback() {
-    setState(() async {
-      setup = await SetupDal().read();
+  void setupCompleteCallback() {
+    print("Setup Complete Callback");
+    setState(() {
+      exists = SetupDal().exists();
+      setup = SetupDal().read();
     });
   }
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+        routes: {
+          '/setup': (context) => FutureBuilder(
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return SetupPage(
+                      title: widget.title,
+                      setup: snapshot.data as Setup,
+                      setupCallback: setupCompleteCallback);
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              },
+              future: setup),
+          '/home': (context) => FutureBuilder(
+              builder: (context, snapshot) {
+                if (snapshot.hasData) {
+                  return HomePage(
+                      title: widget.title, setup: snapshot.data as Setup);
+                } else {
+                  return const CircularProgressIndicator();
+                }
+              },
+              future: setup)
+        },
         title: 'Flutter Demo',
         theme: ThemeData(
             brightness: Brightness.light, colorSchemeSeed: Colors.indigo),
@@ -53,7 +86,16 @@ class _MyAppState extends State<MyApp> {
           builder: (context, snapshot) {
             if (snapshot.hasData) {
               if (snapshot.data == true) {
-                return HomePage(title: widget.title, setup: setup);
+                return FutureBuilder(
+                    builder: (context, snapshot) {
+                      if (snapshot.hasData) {
+                        return HomePage(
+                            title: widget.title, setup: snapshot.data as Setup);
+                      } else {
+                        return const CircularProgressIndicator();
+                      }
+                    },
+                    future: SetupDal().read());
               } else {
                 return SetupPage(
                     title: widget.title, setupCallback: setupCompleteCallback);
@@ -62,7 +104,7 @@ class _MyAppState extends State<MyApp> {
               return const CircularProgressIndicator();
             }
           },
-          future: SetupDal().exists(),
+          future: exists,
         ));
   }
 }

@@ -17,28 +17,24 @@ class _PhraseButtonState extends State<PhraseButton> {
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Column(
-        children: [
-          AspectRatio(
-            aspectRatio: 1,
-            child: ElevatedButton(
-              style: ButtonStyle(
-                shape: MaterialStateProperty.all<RoundedRectangleBorder>(
-                  RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(15),
-                  ),
-                ),
+      child: AspectRatio(
+        aspectRatio: 1,
+        child: ElevatedButton(
+          style: ButtonStyle(
+            shape: MaterialStateProperty.all<RoundedRectangleBorder>(
+              RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
               ),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Expanded(child: widget.icon),
-                ],
-              ),
-              onPressed: widget.onPressed,
             ),
           ),
-        ],
+          onPressed: widget.onPressed,
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Expanded(child: widget.icon),
+            ],
+          ),
+        ),
       ),
     );
   }

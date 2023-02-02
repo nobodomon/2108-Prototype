@@ -17,6 +17,17 @@ class _HomePageState extends State<HomePage> {
   TextEditingController textController = TextEditingController();
   FlutterTts flutterTts = FlutterTts();
 
+  @override
+  void initState() {
+    // TODO: implement initState
+    flutterTts.setLanguage(widget.setup.language);
+    flutterTts.setVoice(
+        {"name": widget.setup.voice, "locale": widget.setup.language});
+    flutterTts.setSpeechRate(widget.setup.speed);
+
+    super.initState();
+  }
+
   void appendTextField(text) {
     setState(() {
       input += text;
@@ -50,7 +61,9 @@ class _HomePageState extends State<HomePage> {
           child: Row(
             children: [
               PhraseButton(
-                onPressed: () => {},
+                onPressed: () => {
+                  Navigator.pushNamed(context, '/setup'),
+                },
                 phrase: "Test",
                 icon: Icon(Icons.settings),
               ),
@@ -73,42 +86,43 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        Expanded(
-            child: GridView(
-          padding: const EdgeInsets.all(15),
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-              childAspectRatio: 1,
-              crossAxisCount: 4,
-              mainAxisSpacing: 15,
-              crossAxisSpacing: 15),
-          children: <Widget>[
-            PhraseButton(
-              phrase: "Test",
-              icon: Icon(Icons.edit),
-              onPressed: () => appendTextField("Test"),
-            ),
-            PhraseButton(
-              phrase: "Test",
-              icon: Icon(Icons.edit),
-              onPressed: () => appendTextField("Test"),
-            ),
-            PhraseButton(
-              phrase: "Test",
-              icon: Icon(Icons.edit),
-              onPressed: () => appendTextField("Test"),
-            ),
-            PhraseButton(
-              phrase: "Test",
-              icon: Icon(Icons.edit),
-              onPressed: () => appendTextField("Test"),
-            ),
-            PhraseButton(
-              phrase: "Test",
-              icon: Icon(Icons.edit),
-              onPressed: () => appendTextField("Test"),
-            ),
-          ],
-        )),
+        Flexible(
+          child: GridView(
+            padding: const EdgeInsets.all(15),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                childAspectRatio: 1,
+                crossAxisCount: widget.setup.layout,
+                mainAxisSpacing: 15,
+                crossAxisSpacing: 15),
+            children: <Widget>[
+              PhraseButton(
+                phrase: "I want to eat ",
+                icon: Icon(Icons.lunch_dining),
+                onPressed: () => appendTextField("I want to eat "),
+              ),
+              PhraseButton(
+                phrase: "I need to go to the toilet ",
+                icon: Icon(Icons.bathtub),
+                onPressed: () => appendTextField("I need to go to the toilet "),
+              ),
+              PhraseButton(
+                phrase: "I am going to bed ",
+                icon: Icon(Icons.bed),
+                onPressed: () => appendTextField("I am going to bed "),
+              ),
+              PhraseButton(
+                phrase: "How are you ",
+                icon: Icon(Icons.face),
+                onPressed: () => appendTextField("How are you "),
+              ),
+              PhraseButton(
+                phrase: "Have you eaten",
+                icon: Icon(Icons.lunch_dining_rounded),
+                onPressed: () => appendTextField("Have you eaten "),
+              ),
+            ],
+          ),
+        ),
       ]),
       bottomSheet: Container(
         decoration: BoxDecoration(
