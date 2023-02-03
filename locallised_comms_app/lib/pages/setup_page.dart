@@ -54,10 +54,6 @@ class _SetupPageState extends State<SetupPage> {
       language = widget.setup!.language;
       voice = widget.setup!.voice;
       speed = widget.setup!.speed;
-      print(layout);
-      print(language);
-      print(voice);
-      print(speed);
     }
 
     _layoutController.text = sampleText;
@@ -66,7 +62,6 @@ class _SetupPageState extends State<SetupPage> {
 
   void fetchVoices(String locale) {
     //fake 1s timeout
-    print("Fetching voices for $locale");
     setState(() {
       voices = Utilities.getVoicesByLocale(locale);
     });
@@ -143,10 +138,7 @@ class _SetupPageState extends State<SetupPage> {
               future: voices!,
               builder: (context, snapshot) {
                 if (snapshot.hasData && snapshot.data.length > 0) {
-                  print("L142 $language");
-                  for (var i = 0; i < snapshot.data.length; i++) {
-                    print("L148 " + snapshot.data[i].name);
-                  }
+                  for (var i = 0; i < snapshot.data.length; i++) {}
                   return DropdownButtonFormField(
                     decoration: const InputDecoration(
                       border: OutlineInputBorder(),

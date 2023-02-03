@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:locallised_comms_app/components/phrase_button.dart';
+import 'package:locallised_comms_app/pages/add_phrase.dart';
 import 'package:locallised_comms_app/pages/home_page.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -75,7 +76,8 @@ class _MyAppState extends State<MyApp> {
                   return const CircularProgressIndicator();
                 }
               },
-              future: setup)
+              future: setup),
+          '/add-phrase': (context) => AddPhrase()
         },
         title: 'Flutter Demo',
         theme: ThemeData(

@@ -38,6 +38,13 @@ dependencies:
   flutter_tts: ^3.6.3
   path_provider: ^2.0.12
   dropdown_textfield: ^1.0.8
+  ulid: ^2.0.0
+  image_picker: ^0.8.6+1
+  flutter_iconpicker: 
+    git:
+      url: https://github.com/kechankrisna/FlutterIconPicker
+      ref: hotfix
+  path: ^1.8.3
 
 dev_dependencies:
   flutter_test:

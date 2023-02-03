@@ -1,7 +1,12 @@
+import 'dart:io';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:locallised_comms_app/components/phrase_button.dart';
+import 'package:locallised_comms_app/dal/CustomPhrase.dart';
 
+import '../models/Phrase.dart';
 import '../models/Setup.dart';
 
 class HomePage extends StatefulWidget {
@@ -14,8 +19,33 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String input = "";
+  int index = 0;
   TextEditingController textController = TextEditingController();
   FlutterTts flutterTts = FlutterTts();
+
+  tryNext() {
+    if (index == 2) {
+      setState(() {
+        index = 0;
+      });
+    } else {
+      setState(() {
+        index++;
+      });
+    }
+  }
+
+  tryPrevious() {
+    if (index == 0) {
+      setState(() {
+        index = 2;
+      });
+    } else {
+      setState(() {
+        index--;
+      });
+    }
+  }
 
   @override
   void initState() {
@@ -65,63 +95,47 @@ class _HomePageState extends State<HomePage> {
                   Navigator.pushNamed(context, '/setup'),
                 },
                 phrase: "Test",
-                icon: Icon(Icons.settings),
+                phraseMode: Mode.icon,
+                decal: Icons.settings.codePoint,
               ),
-              SizedBox(
+              const SizedBox(
                 width: 15,
               ),
               PhraseButton(
-                onPressed: () => {},
+                onPressed: () => {
+                  Navigator.pushNamed(context, '/add-phrase'),
+                },
                 phrase: "Test",
-                icon: Icon(Icons.chevron_left),
+                phraseMode: Mode.icon,
+                decal: Icons.add.codePoint,
               ),
-              SizedBox(
+              const SizedBox(
                 width: 15,
               ),
               PhraseButton(
-                onPressed: () => {},
+                onPressed: () => {tryPrevious()},
                 phrase: "Test",
-                icon: Icon(Icons.chevron_right),
+                phraseMode: Mode.icon,
+                decal: Icons.chevron_left.codePoint,
+              ),
+              const SizedBox(
+                width: 15,
+              ),
+              PhraseButton(
+                onPressed: () => {tryNext()},
+                phrase: "Test",
+                phraseMode: Mode.icon,
+                decal: Icons.chevron_right.codePoint,
               ),
             ],
           ),
         ),
         Flexible(
-          child: GridView(
-            padding: const EdgeInsets.all(15),
-            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                childAspectRatio: 1,
-                crossAxisCount: widget.setup.layout,
-                mainAxisSpacing: 15,
-                crossAxisSpacing: 15),
-            children: <Widget>[
-              PhraseButton(
-                phrase: "I want to eat ",
-                icon: Icon(Icons.lunch_dining),
-                onPressed: () => appendTextField("I want to eat "),
-              ),
-              PhraseButton(
-                phrase: "I need to go to the toilet ",
-                icon: Icon(Icons.bathtub),
-                onPressed: () => appendTextField("I need to go to the toilet "),
-              ),
-              PhraseButton(
-                phrase: "I am going to bed ",
-                icon: Icon(Icons.bed),
-                onPressed: () => appendTextField("I am going to bed "),
-              ),
-              PhraseButton(
-                phrase: "How are you ",
-                icon: Icon(Icons.face),
-                onPressed: () => appendTextField("How are you "),
-              ),
-              PhraseButton(
-                phrase: "Have you eaten",
-                icon: Icon(Icons.lunch_dining_rounded),
-                onPressed: () => appendTextField("Have you eaten "),
-              ),
-            ],
-          ),
+          child: index == 0
+              ? defaultPhrases()
+              : index == 1
+                  ? customPhrases()
+                  : Container(),
         ),
       ]),
       bottomSheet: Container(
@@ -166,5 +180,79 @@ class _HomePageState extends State<HomePage> {
             )),
       ), //ailing comma makes auto-formatting nicer for build methods.
     );
+  }
+
+  Widget defaultPhrases() {
+    return GridView(
+      padding: const EdgeInsets.all(15),
+      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+          childAspectRatio: 1,
+          crossAxisCount: widget.setup.layout,
+          mainAxisSpacing: 15,
+          crossAxisSpacing: 15),
+      children: <Widget>[
+        PhraseButton(
+          phrase: "I want to eat ",
+          decal: Icons.lunch_dining.codePoint,
+          phraseMode: Mode.icon,
+          onPressed: () => appendTextField("I want to eat "),
+        ),
+        PhraseButton(
+          phrase: "I need to go to the toilet ",
+          decal: Icons.bathtub.codePoint,
+          phraseMode: Mode.icon,
+          onPressed: () => appendTextField("I need to go to the toilet "),
+        ),
+        PhraseButton(
+          phrase: "I am going to bed ",
+          decal: Icons.bed.codePoint,
+          phraseMode: Mode.icon,
+          onPressed: () => appendTextField("I am going to bed "),
+        ),
+        PhraseButton(
+          phrase: "How are you ",
+          decal: Icons.face.codePoint,
+          phraseMode: Mode.icon,
+          onPressed: () => appendTextField("How are you "),
+        ),
+        PhraseButton(
+          phrase: "Have you eaten",
+          decal: Icons.lunch_dining_rounded.codePoint,
+          phraseMode: Mode.icon,
+          onPressed: () => appendTextField("Have you eaten "),
+        ),
+      ],
+    );
+  }
+
+  Widget customPhrases() {
+    CustomPhrase customPhrases = CustomPhrase();
+    return FutureBuilder(
+        future: customPhrases.read(),
+        builder: (BuildContext context, AsyncSnapshot snapshot) {
+          if (snapshot.hasData) {
+            return GridView(
+              padding: const EdgeInsets.all(15),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                  childAspectRatio: 1,
+                  crossAxisCount: widget.setup.layout,
+                  mainAxisSpacing: 15,
+                  crossAxisSpacing: 15),
+              children: <Widget>[
+                for (Phrase phrase in snapshot.data)
+                  PhraseButton(
+                    phrase: phrase.phrase,
+                    decal: phrase.decal,
+                    phraseMode: phrase.phraseMode,
+                    onPressed: () => appendTextField(phrase.phrase),
+                  ),
+              ],
+            );
+          } else {
+            return const Center(
+              child: CircularProgressIndicator(),
+            );
+          }
+        });
   }
 }

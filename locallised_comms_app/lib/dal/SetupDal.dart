@@ -26,7 +26,6 @@ class SetupDal {
   }
 
   Future<File> write(Setup setup) async {
-    print("Writing Setup: " + setup.toJson());
     final file = await _localFile;
     return file.writeAsString(setup.toJson());
   }
