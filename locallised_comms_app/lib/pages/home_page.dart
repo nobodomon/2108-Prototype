@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:locallised_comms_app/components/phrase_button.dart';
 import 'package:locallised_comms_app/dal/CustomPhrase.dart';
+import 'package:path/path.dart';
 
 import '../models/Phrase.dart';
 import '../models/Setup.dart';
@@ -19,43 +20,47 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   String input = "";
+  String currentWord = "";
   int index = 0;
+  int end = 0;
   TextEditingController textController = TextEditingController();
+  PageController _pageController =
+      PageController(initialPage: 0, keepPage: true);
   FlutterTts flutterTts = FlutterTts();
+  CustomPhrase customPhrases = CustomPhrase();
 
   tryNext() {
-    if (index == 2) {
-      setState(() {
-        index = 0;
-      });
-    } else {
-      setState(() {
-        index++;
-      });
-    }
+    _pageController.nextPage(
+        duration: const Duration(milliseconds: 500), curve: Curves.ease);
   }
 
   tryPrevious() {
-    if (index == 0) {
-      setState(() {
-        index = 2;
-      });
-    } else {
-      setState(() {
-        index--;
-      });
-    }
+    _pageController.previousPage(
+        duration: const Duration(milliseconds: 500), curve: Curves.ease);
   }
 
   @override
   void initState() {
-    // TODO: implement initState
+    super.initState();
+    initTTS(context);
+  }
+
+  void initTTS(context) {
     flutterTts.setLanguage(widget.setup.language);
     flutterTts.setVoice(
         {"name": widget.setup.voice, "locale": widget.setup.language});
     flutterTts.setSpeechRate(widget.setup.speed);
-
-    super.initState();
+    flutterTts.setProgressHandler(
+        (String text, int startOffset, int endOffset, String word) {
+      setState(() {
+        end = endOffset;
+        currentWord = word;
+        input = word;
+      });
+    });
+    flutterTts.setCompletionHandler(() {
+      Navigator.pop(context);
+    });
   }
 
   void appendTextField(text) {
@@ -65,30 +70,97 @@ class _HomePageState extends State<HomePage> {
     textController.text = input;
   }
 
+  Future _speak(context) async {
+    if (input.isEmpty) {
+      return;
+    } else {
+      await flutterTts.awaitSpeakCompletion(true);
+      _showSpeechDialog(context);
+      var result = await flutterTts.speak(input);
+      if (result == 1) {
+        Navigator.of(context).pop();
+        setState(() {
+          currentWord = "";
+          textController.text = "";
+          input = "";
+          end = 0;
+        });
+      }
+    }
+  }
+
+  Future _stop(context) async {
+    var result = await flutterTts.stop();
+    if (result == 1) {
+      Navigator.of(context).pop();
+      setState(() {
+        textController.text = "";
+        currentWord = "";
+        input = "";
+        end = 0;
+      });
+    }
+  }
+
+  Future<void> _showSpeechDialog(context) async {
+    return showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return StatefulBuilder(builder: (context, setState) {
+            return AlertDialog(
+              title: const Text("Speech in progress..."),
+              content: Column(mainAxisSize: MainAxisSize.min, children: [
+                Text(currentWord),
+                _textProgress(context),
+              ]),
+              actions: [
+                IconButton(
+                    onPressed: () => {_stop(context)},
+                    icon: const Icon(Icons.stop)),
+              ],
+            );
+          });
+        });
+  }
+
+  Widget _textProgress(context) {
+    return Flex(
+      direction: Axis.vertical,
+      children: [
+        LinearProgressIndicator(
+            valueColor:
+                AlwaysStoppedAnimation<Color>(Theme.of(context).primaryColor),
+            value: end / input.length.toDouble()),
+        IconButton(
+          onPressed: flutterTts.pauseHandler,
+          icon: const Icon(Icons.pause),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    // TODO: implement build
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () async => {
-          await flutterTts.speak(input).then((value) => {
-                textController.text = "",
-              }),
-          setState(() {
-            input = "";
-          })
-        },
-        child: Icon(
-          Icons.speaker,
+      floatingActionButton: Padding(
+        padding: const EdgeInsets.only(bottom: 100),
+        child: FloatingActionButton(
+          onPressed: () async {
+            await _speak(context);
+          },
+          child: const Icon(
+            Icons.speaker,
+          ),
         ),
       ),
       body: Column(children: [
         Padding(
           padding: const EdgeInsets.all(15),
-          child: Row(
+          child: Flex(
+            direction: Axis.horizontal,
             children: [
               PhraseButton(
                 onPressed: () => {
@@ -130,121 +202,135 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        Flexible(
-          child: index == 0
-              ? defaultPhrases()
-              : index == 1
-                  ? customPhrases()
-                  : Container(),
+        Expanded(
+          child: PageView(
+            controller: _pageController,
+            onPageChanged: (int index) {
+              setState(() {
+                this.index = index;
+              });
+            },
+            children: [
+              DefaultPhraseLayout(
+                setup: widget.setup,
+                appendTextField: appendTextField,
+              ),
+              CustomPhrasesLayout(
+                setup: widget.setup,
+                appendTextField: appendTextField,
+              ),
+              Container(),
+            ],
+          ),
         ),
+        _bottomTextBar()
       ]),
-      bottomSheet: Container(
-        decoration: BoxDecoration(
-          color: Theme.of(context).cardColor,
-          boxShadow: const [
-            BoxShadow(
-              color: Colors.black12,
-              blurRadius: 10.0,
-            ),
-          ],
-        ),
-        child: ConstrainedBox(
-            constraints:
-                BoxConstraints.expand(height: 100, width: double.maxFinite),
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                    child: Padding(
-                  padding: const EdgeInsets.all(5.0),
-                  child: TextField(
-                    textAlignVertical: TextAlignVertical.top,
-                    expands: true,
-                    minLines: null,
-                    maxLines: null,
-                    controller: textController,
-                    enabled: false,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
-                )),
-                Padding(
-                  padding: const EdgeInsets.all(5),
-                  child: ElevatedButton(
-                    child: const Text("Whatsapp/Telegram"),
-                    onPressed: () => {},
-                  ),
-                ),
-              ],
-            )),
-      ), //ailing comma makes auto-formatting nicer for build methods.
     );
   }
 
-  Widget defaultPhrases() {
-    return GridView(
+  Widget _bottomTextBar() {
+    return ConstrainedBox(
+        constraints:
+            const BoxConstraints.expand(height: 100, width: double.maxFinite),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(
+                child: Padding(
+              padding: const EdgeInsets.all(5.0),
+              child: TextField(
+                textAlignVertical: TextAlignVertical.top,
+                expands: true,
+                minLines: null,
+                maxLines: null,
+                controller: textController,
+                enabled: false,
+                decoration: const InputDecoration(
+                  border: OutlineInputBorder(),
+                ),
+              ),
+            )),
+            Padding(
+              padding: const EdgeInsets.all(5),
+              child: ElevatedButton(
+                child: const Text("Whatsapp/Telegram"),
+                onPressed: () => {},
+              ),
+            ),
+          ],
+        ));
+  }
+}
+
+class DefaultPhraseLayout extends StatelessWidget {
+  final Setup setup;
+  final List<List<dynamic>> phrases = [
+    ["I want to eat ", Icons.lunch_dining.codePoint],
+    ["I need to go to the toilet ", Icons.bathtub.codePoint],
+    ["I am going to bed ", Icons.bed.codePoint],
+    ["How are you ", Icons.sentiment_satisfied.codePoint],
+    ["Have you eaten ", Icons.food_bank.codePoint],
+  ];
+  final Function appendTextField;
+  DefaultPhraseLayout(
+      {Key? key, required this.appendTextField, required this.setup})
+      : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: setup.layout,
       padding: const EdgeInsets.all(15),
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          childAspectRatio: 1,
-          crossAxisCount: widget.setup.layout,
-          mainAxisSpacing: 15,
-          crossAxisSpacing: 15),
+      crossAxisSpacing: 15,
+      mainAxisSpacing: 15,
       children: <Widget>[
-        PhraseButton(
-          phrase: "I want to eat ",
-          decal: Icons.lunch_dining.codePoint,
-          phraseMode: Mode.icon,
-          onPressed: () => appendTextField("I want to eat "),
-        ),
-        PhraseButton(
-          phrase: "I need to go to the toilet ",
-          decal: Icons.bathtub.codePoint,
-          phraseMode: Mode.icon,
-          onPressed: () => appendTextField("I need to go to the toilet "),
-        ),
-        PhraseButton(
-          phrase: "I am going to bed ",
-          decal: Icons.bed.codePoint,
-          phraseMode: Mode.icon,
-          onPressed: () => appendTextField("I am going to bed "),
-        ),
-        PhraseButton(
-          phrase: "How are you ",
-          decal: Icons.face.codePoint,
-          phraseMode: Mode.icon,
-          onPressed: () => appendTextField("How are you "),
-        ),
-        PhraseButton(
-          phrase: "Have you eaten",
-          decal: Icons.lunch_dining_rounded.codePoint,
-          phraseMode: Mode.icon,
-          onPressed: () => appendTextField("Have you eaten "),
-        ),
+        for (List<dynamic> phrase in phrases)
+          Flex(
+            direction: Axis.vertical,
+            children: [
+              PhraseButton(
+                phrase: phrase[0],
+                decal: phrase[1],
+                phraseMode: Mode.icon,
+                onPressed: () => appendTextField(phrase[0]),
+              ),
+            ],
+          ),
       ],
     );
   }
+}
 
-  Widget customPhrases() {
+class CustomPhrasesLayout extends StatelessWidget {
+  final Setup setup;
+  final Function appendTextField;
+  const CustomPhrasesLayout(
+      {Key? key, required this.setup, required this.appendTextField})
+      : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
     CustomPhrase customPhrases = CustomPhrase();
     return FutureBuilder(
         future: customPhrases.read(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
-            return GridView(
+            return GridView.count(
+              crossAxisCount: setup.layout,
               padding: const EdgeInsets.all(15),
-              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                  childAspectRatio: 1,
-                  crossAxisCount: widget.setup.layout,
-                  mainAxisSpacing: 15,
-                  crossAxisSpacing: 15),
+              crossAxisSpacing: 15,
+              mainAxisSpacing: 15,
               children: <Widget>[
                 for (Phrase phrase in snapshot.data)
-                  PhraseButton(
-                    phrase: phrase.phrase,
-                    decal: phrase.decal,
-                    phraseMode: phrase.phraseMode,
-                    onPressed: () => appendTextField(phrase.phrase),
+                  Flex(
+                    direction: Axis.vertical,
+                    children: [
+                      PhraseButton(
+                        phrase: phrase.phrase,
+                        decal: phrase.decal,
+                        phraseMode: phrase.phraseMode,
+                        onPressed: () => appendTextField(phrase.phrase),
+                      ),
+                    ],
                   ),
               ],
             );

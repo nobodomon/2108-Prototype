@@ -113,42 +113,41 @@ class _AddPhraseState extends State<AddPhrase> {
                   ),
                 ),
                 //Radio group
-                Row(
-                  children: [
-                    Radio(
-                      value: Mode.icon,
-                      groupValue: phraseMode,
-                      onChanged: (value) {
-                        setState(() {
-                          phraseMode = Mode.icon;
-                          decal = null;
-                          previewDecal = null;
-                        });
-                      },
-                    ),
-                    Radio(
-                      value: Mode.image,
-                      groupValue: phraseMode,
-                      onChanged: (value) {
-                        setState(() {
-                          phraseMode = Mode.image;
-                          decal = null;
-                          previewDecal = null;
-                        });
-                      },
-                    ),
-                    Radio(
-                      value: Mode.emoji,
-                      groupValue: phraseMode,
-                      onChanged: (value) {
-                        setState(() {
-                          phraseMode = Mode.emoji;
-                          decal = null;
-                          previewDecal = null;
-                        });
-                      },
-                    ),
-                  ],
+                RadioListTile<Mode>(
+                  title: const Text('Icon'),
+                  value: Mode.icon,
+                  groupValue: phraseMode,
+                  onChanged: (value) {
+                    setState(() {
+                      phraseMode = Mode.icon;
+                      decal = null;
+                      previewDecal = null;
+                    });
+                  },
+                ),
+                RadioListTile<Mode>(
+                  title: const Text('Image'),
+                  value: Mode.image,
+                  groupValue: phraseMode,
+                  onChanged: (value) {
+                    setState(() {
+                      phraseMode = Mode.image;
+                      decal = null;
+                      previewDecal = null;
+                    });
+                  },
+                ),
+                RadioListTile<Mode>(
+                  title: const Text('Emoji'),
+                  value: Mode.emoji,
+                  groupValue: phraseMode,
+                  onChanged: (value) {
+                    setState(() {
+                      phraseMode = Mode.emoji;
+                      decal = null;
+                      previewDecal = null;
+                    });
+                  },
                 ),
 
                 ConditionedInput(phraseMode,
@@ -160,7 +159,8 @@ class _AddPhraseState extends State<AddPhrase> {
                   padding: const EdgeInsets.all(15),
                   child: ElevatedButton(
                     onPressed: () {
-                      saveCustomPhrase(phraseController.text);
+                      saveCustomPhrase(phraseController.text)
+                          .then((value) => Navigator.pop(context));
                     },
                     child: const Text("Save"),
                   ),
@@ -186,15 +186,16 @@ Widget ButtonPreview({mode, decal, phrase}) {
   if (decal == null) {
     return Text("No decal");
   } else {
-    return GridView(
-      gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 4, childAspectRatio: 1.0),
+    return GridView.count(
+      crossAxisCount: 4,
       children: [
-        PhraseButton(
-            decal: decal,
-            phrase: phrase,
-            phraseMode: mode,
-            onPressed: () => {}),
+        Flex(direction: Axis.vertical, children: [
+          PhraseButton(
+              decal: decal,
+              phrase: phrase,
+              phraseMode: mode,
+              onPressed: () => {})
+        ])
       ],
     );
   }

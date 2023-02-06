@@ -44,7 +44,6 @@ class _MyAppState extends State<MyApp> {
   }
 
   void setupCompleteCallback() {
-    print("Setup Complete Callback");
     setState(() {
       exists = SetupDal().exists();
       setup = SetupDal().read();

@@ -43,21 +43,18 @@ class Phrase {
 
   static Phrase fromJson(Map<String, dynamic> json) {
     if (json['phraseMode'] == 'Mode.icon') {
-      print(json);
       return Phrase(
         phrase: json['phrase'],
         decal: json['decal'],
         phraseMode: Mode.icon,
       );
     } else if (json['phraseMode'] == 'Mode.image') {
-      print(json);
       return Phrase(
         phrase: json['phrase'],
         decal: json['decal'],
         phraseMode: Mode.image,
       );
     } else {
-      print(json);
       return Phrase(
         phrase: json['phrase'],
         decal: json['decal'],

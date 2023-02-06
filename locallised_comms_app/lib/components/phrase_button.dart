@@ -26,11 +26,17 @@ class _PhraseButtonState extends State<PhraseButton> {
     if (widget.phraseMode != null) {
       switch (widget.phraseMode) {
         case Mode.icon:
-          localDecal =
-              Icon(IconData(widget.decal, fontFamily: 'MaterialIcons'));
+          localDecal = FittedBox(
+            fit: BoxFit.fill,
+            child: Icon(
+              IconData(widget.decal, fontFamily: 'MaterialIcons'),
+            ),
+          );
           break;
         case Mode.image:
-          localDecal = Image.file(File(widget.decal), fit: BoxFit.cover);
+          localDecal = FittedBox(
+              fit: BoxFit.fill,
+              child: Image.file(File(widget.decal), fit: BoxFit.fitWidth));
           break;
         case Mode.emoji:
           localDecal = Text(
@@ -40,7 +46,7 @@ class _PhraseButtonState extends State<PhraseButton> {
         default:
       }
     }
-    return Expanded(
+    return Flexible(
       child: AspectRatio(
         aspectRatio: 1,
         child: ElevatedButton(
@@ -50,7 +56,13 @@ class _PhraseButtonState extends State<PhraseButton> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          child: Expanded(child: localDecal),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              AspectRatio(aspectRatio: 1, child: localDecal),
+            ],
+          ),
         ),
       ),
     );

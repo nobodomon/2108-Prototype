@@ -29,10 +29,6 @@ class CustomPhrase {
       }
       final contents = await file.readAsString();
       List<dynamic> phrases = jsonDecode(contents);
-      print("Reading Phrases: ");
-      for (dynamic phrase in phrases) {
-        print(phrase);
-      }
       List<Phrase> phrasesList =
           phrases.map((e) => Phrase.fromJson(e)).toList();
       return phrasesList;
@@ -53,14 +49,8 @@ class CustomPhrase {
     } else {
       phrases = [phrase];
     }
-    print("Writing Phrases: " + phrase.toString());
-    for (Phrase phrase in phrases) {
-      print(phrase);
-    }
     final file = await _localFile;
     String phrasesString = jsonEncode(phrases);
-    print("Encode Result");
-    print(phrasesString);
 
     return file.writeAsString(phrasesString, flush: true);
   }
@@ -75,8 +65,6 @@ class CustomPhrase {
       final localPath = await _localPath;
 
       final imageContent = await image.readAsBytes();
-      print(image.path);
-      print(imageContent);
       String fileULID = Ulid().toString();
       String newFileName = path.join(
           localPath, "images", "$fileULID.${image.path.split(".").last}");
