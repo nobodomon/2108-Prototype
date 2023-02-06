@@ -55,8 +55,10 @@ class _PhraseButtonState extends State<PhraseButton> {
         child: ElevatedButton(
           onPressed: widget.onPressed,
           style: ElevatedButton.styleFrom(
+            backgroundColor: Theme.of(context).buttonTheme.colorScheme!.primary,
+            elevation: 15,
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(10),
+              borderRadius: BorderRadius.circular(15),
             ),
           ),
           child: Column(

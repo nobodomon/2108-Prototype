@@ -82,9 +82,9 @@ class _MyAppState extends State<MyApp> {
         },
         title: 'Flutter Demo',
         theme: ThemeData(
-            brightness: Brightness.light, colorSchemeSeed: Colors.indigo),
+            brightness: Brightness.light, colorSchemeSeed: Colors.indigo[200]),
         darkTheme: ThemeData(
-            brightness: Brightness.dark, colorSchemeSeed: Colors.indigo),
+            brightness: Brightness.dark, colorSchemeSeed: Colors.indigo[200]),
         home: FutureBuilder(
           builder: (context, snapshot) {
             if (snapshot.hasData) {

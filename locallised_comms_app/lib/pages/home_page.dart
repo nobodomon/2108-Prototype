@@ -167,8 +167,23 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
-      body: Column(children: [
-        Padding(
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          if (constraints.maxWidth > 600) {
+            return _DesktopLayout(context);
+          } else {
+            return _MobileLayout(context);
+          }
+        },
+      ),
+    );
+  }
+
+  Widget _DesktopLayout(context) {
+    return Column(children: [
+      ConstrainedBox(
+        constraints: const BoxConstraints(maxHeight: 100),
+        child: Padding(
           padding: const EdgeInsets.all(15),
           child: Flex(
             direction: Axis.horizontal,
@@ -215,30 +230,108 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
         ),
-        Expanded(
-          child: PageView(
-            controller: _pageController,
-            onPageChanged: (int index) {
-              setState(() {
-                this.index = index;
-              });
-            },
-            children: [
-              DefaultPhraseLayout(
-                setup: widget.setup,
-                appendTextField: appendTextField,
-              ),
-              CustomPhrasesLayout(
-                setup: widget.setup,
-                appendTextField: appendTextField,
-              ),
-              Container(),
-            ],
-          ),
+      ),
+      Expanded(
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: (int index) {
+            setState(() {
+              this.index = index;
+            });
+          },
+          children: [
+            DefaultPhraseLayout(
+              isMobile: false,
+              setup: widget.setup,
+              appendTextField: appendTextField,
+            ),
+            CustomPhrasesLayout(
+              isMobile: false,
+              setup: widget.setup,
+              appendTextField: appendTextField,
+            ),
+            const Center(child: Text("Voice Packs will appear here")),
+          ],
         ),
-        _bottomTextBar()
-      ]),
-    );
+      ),
+      _bottomTextBar()
+    ]);
+  }
+
+  Widget _MobileLayout(context) {
+    return Column(children: [
+      Padding(
+        padding: const EdgeInsets.all(15),
+        child: Flex(
+          direction: Axis.horizontal,
+          children: [
+            PhraseButton(
+              onPressed: () => {
+                Navigator.pushNamed(context, '/setup'),
+              },
+              phrase: "Test",
+              phraseMode: Mode.icon,
+              decal: Icons.settings.codePoint,
+            ),
+            const SizedBox(
+              width: 15,
+            ),
+            PhraseButton(
+              onPressed: () => {
+                Navigator.pushNamed(context, '/add-phrase'),
+              },
+              phrase: "Test",
+              phraseMode: Mode.icon,
+              decal: Icons.add.codePoint,
+            ),
+            const SizedBox(
+              width: 15,
+            ),
+            PhraseButton(
+              onPressed: () => {
+                Navigator.pushNamed(context, '/remove-phrase'),
+              },
+              phrase: "Remove",
+              phraseMode: Mode.icon,
+              decal: Icons.remove.codePoint,
+            ),
+            const SizedBox(
+              width: 15,
+            ),
+            PhraseButton(
+              onPressed: () => {tryNext()},
+              phrase: "Test",
+              phraseMode: Mode.icon,
+              decal: Icons.chevron_right.codePoint,
+            ),
+          ],
+        ),
+      ),
+      Expanded(
+        child: PageView(
+          controller: _pageController,
+          onPageChanged: (int index) {
+            setState(() {
+              this.index = index;
+            });
+          },
+          children: [
+            DefaultPhraseLayout(
+              isMobile: true,
+              setup: widget.setup,
+              appendTextField: appendTextField,
+            ),
+            CustomPhrasesLayout(
+              isMobile: true,
+              setup: widget.setup,
+              appendTextField: appendTextField,
+            ),
+            const Center(child: Text("Voice Packs will appear here")),
+          ],
+        ),
+      ),
+      _bottomTextBar()
+    ]);
   }
 
   Widget _bottomTextBar() {
@@ -286,6 +379,7 @@ class _HomePageState extends State<HomePage> {
 
 class DefaultPhraseLayout extends StatelessWidget {
   final Setup setup;
+  final bool isMobile;
   final List<List<dynamic>> phrases = [
     ["I want to eat ", Icons.lunch_dining.codePoint],
     ["I need to go to the toilet ", Icons.bathtub.codePoint],
@@ -295,28 +389,41 @@ class DefaultPhraseLayout extends StatelessWidget {
   ];
   final Function appendTextField;
   DefaultPhraseLayout(
-      {Key? key, required this.appendTextField, required this.setup})
+      {Key? key,
+      required this.appendTextField,
+      required this.setup,
+      required this.isMobile})
       : super(key: key);
   @override
   Widget build(BuildContext context) {
-    return GridView.count(
-      crossAxisCount: setup.layout,
-      padding: const EdgeInsets.all(15),
-      crossAxisSpacing: 15,
-      mainAxisSpacing: 15,
-      children: <Widget>[
-        for (List<dynamic> phrase in phrases)
-          Flex(
-            direction: Axis.vertical,
-            children: [
-              PhraseButton(
-                phrase: phrase[0],
-                decal: phrase[1],
-                phraseMode: Mode.icon,
-                onPressed: () => appendTextField(phrase[0]),
-              ),
+    return Column(
+      children: [
+        const Text(
+          "Default Phrases",
+          textAlign: TextAlign.start,
+        ),
+        Expanded(
+          child: GridView.count(
+            crossAxisCount: isMobile ? setup.layout : setup.layout * 2,
+            padding: const EdgeInsets.all(15),
+            crossAxisSpacing: 15,
+            mainAxisSpacing: 15,
+            children: <Widget>[
+              for (List<dynamic> phrase in phrases)
+                Flex(
+                  direction: Axis.vertical,
+                  children: [
+                    PhraseButton(
+                      phrase: phrase[0],
+                      decal: phrase[1],
+                      phraseMode: Mode.icon,
+                      onPressed: () => appendTextField(phrase[0]),
+                    ),
+                  ],
+                ),
             ],
           ),
+        ),
       ],
     );
   }
@@ -325,8 +432,12 @@ class DefaultPhraseLayout extends StatelessWidget {
 class CustomPhrasesLayout extends StatelessWidget {
   final Setup setup;
   final Function appendTextField;
+  final bool isMobile;
   const CustomPhrasesLayout(
-      {Key? key, required this.setup, required this.appendTextField})
+      {Key? key,
+      required this.setup,
+      required this.appendTextField,
+      required this.isMobile})
       : super(key: key);
 
   @override
@@ -336,24 +447,34 @@ class CustomPhrasesLayout extends StatelessWidget {
         future: customPhrases.read(),
         builder: (BuildContext context, AsyncSnapshot snapshot) {
           if (snapshot.hasData) {
-            return GridView.count(
-              crossAxisCount: setup.layout,
-              padding: const EdgeInsets.all(15),
-              crossAxisSpacing: 15,
-              mainAxisSpacing: 15,
-              children: <Widget>[
-                for (Phrase phrase in snapshot.data)
-                  Flex(
-                    direction: Axis.vertical,
-                    children: [
-                      PhraseButton(
-                        phrase: phrase.phrase,
-                        decal: phrase.decal,
-                        phraseMode: phrase.phraseMode,
-                        onPressed: () => appendTextField(phrase.phrase),
-                      ),
+            return Column(
+              children: [
+                const Text(
+                  "Custom Phrases",
+                  textAlign: TextAlign.start,
+                ),
+                Expanded(
+                  child: GridView.count(
+                    crossAxisCount: isMobile ? setup.layout : setup.layout * 2,
+                    padding: const EdgeInsets.all(15),
+                    crossAxisSpacing: 15,
+                    mainAxisSpacing: 15,
+                    children: <Widget>[
+                      for (Phrase phrase in snapshot.data)
+                        Flex(
+                          direction: Axis.vertical,
+                          children: [
+                            PhraseButton(
+                              phrase: phrase.phrase,
+                              decal: phrase.decal,
+                              phraseMode: phrase.phraseMode,
+                              onPressed: () => appendTextField(phrase.phrase),
+                            ),
+                          ],
+                        ),
                     ],
                   ),
+                ),
               ],
             );
           } else {
