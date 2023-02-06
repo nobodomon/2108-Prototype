@@ -6,6 +6,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:locallised_comms_app/components/phrase_button.dart';
 import 'package:locallised_comms_app/pages/add_phrase.dart';
 import 'package:locallised_comms_app/pages/home_page.dart';
+import 'package:locallised_comms_app/pages/remove_phrase.dart';
 import 'package:path_provider/path_provider.dart';
 
 import 'models/Setup.dart';
@@ -18,7 +19,7 @@ void main() {
 
 class MyApp extends StatefulWidget {
   const MyApp({super.key});
-  final title = 'Localised Comms App';
+  final title = 'Voice Abang';
   // This widget is the root of your application.
   @override
   State<MyApp> createState() => _MyAppState();
@@ -76,7 +77,8 @@ class _MyAppState extends State<MyApp> {
                 }
               },
               future: setup),
-          '/add-phrase': (context) => AddPhrase()
+          '/add-phrase': (context) => const AddPhrase(),
+          '/remove-phrase': (context) => const RemovePhrase()
         },
         title: 'Flutter Demo',
         theme: ThemeData(

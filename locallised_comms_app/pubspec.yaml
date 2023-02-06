@@ -45,6 +45,7 @@ dependencies:
       url: https://github.com/kechankrisna/FlutterIconPicker
       ref: hotfix
   path: ^1.8.3
+  share_plus: ^6.3.0
 
 dev_dependencies:
   flutter_test:

@@ -6,6 +6,7 @@ import 'package:flutter_tts/flutter_tts.dart';
 import 'package:locallised_comms_app/components/phrase_button.dart';
 import 'package:locallised_comms_app/dal/CustomPhrase.dart';
 import 'package:path/path.dart';
+import 'package:share_plus/share_plus.dart';
 
 import '../models/Phrase.dart';
 import '../models/Setup.dart';
@@ -25,18 +26,28 @@ class _HomePageState extends State<HomePage> {
   int end = 0;
   TextEditingController textController = TextEditingController();
   PageController _pageController =
-      PageController(initialPage: 0, keepPage: true);
+      PageController(initialPage: 0, keepPage: false);
   FlutterTts flutterTts = FlutterTts();
   CustomPhrase customPhrases = CustomPhrase();
 
   tryNext() {
-    _pageController.nextPage(
-        duration: const Duration(milliseconds: 500), curve: Curves.ease);
+    if (index == 2) {
+      _pageController.animateToPage(0,
+          duration: const Duration(milliseconds: 500), curve: Curves.linear);
+    } else {
+      _pageController.nextPage(
+          duration: const Duration(milliseconds: 500), curve: Curves.linear);
+    }
   }
 
   tryPrevious() {
-    _pageController.previousPage(
-        duration: const Duration(milliseconds: 500), curve: Curves.ease);
+    if (index == 0) {
+      _pageController.animateToPage(3,
+          duration: const Duration(milliseconds: 500), curve: Curves.linear);
+    } else {
+      _pageController.previousPage(
+          duration: const Duration(milliseconds: 500), curve: Curves.linear);
+    }
   }
 
   @override
@@ -185,10 +196,12 @@ class _HomePageState extends State<HomePage> {
                 width: 15,
               ),
               PhraseButton(
-                onPressed: () => {tryPrevious()},
-                phrase: "Test",
+                onPressed: () => {
+                  Navigator.pushNamed(context, '/remove-phrase'),
+                },
+                phrase: "Remove",
                 phraseMode: Mode.icon,
-                decal: Icons.chevron_left.codePoint,
+                decal: Icons.remove.codePoint,
               ),
               const SizedBox(
                 width: 15,
@@ -254,7 +267,16 @@ class _HomePageState extends State<HomePage> {
               padding: const EdgeInsets.all(5),
               child: ElevatedButton(
                 child: const Text("Whatsapp/Telegram"),
-                onPressed: () => {},
+                onPressed: () async => {
+                  await Share.share(textController.text).then((value) => {
+                        setState(() {
+                          textController.text = "";
+                          currentWord = "";
+                          input = "";
+                          end = 0;
+                        })
+                      })
+                },
               ),
             ),
           ],

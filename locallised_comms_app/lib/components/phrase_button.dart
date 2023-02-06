@@ -39,8 +39,11 @@ class _PhraseButtonState extends State<PhraseButton> {
               child: Image.file(File(widget.decal), fit: BoxFit.fitWidth));
           break;
         case Mode.emoji:
-          localDecal = Text(
-            widget.decal,
+          localDecal = FittedBox(
+            fit: BoxFit.fill,
+            child: Text(
+              widget.decal,
+            ),
           );
           break;
         default:

@@ -228,6 +228,7 @@ Widget ConditionedInput(phraseMode,
     return Padding(
       padding: const EdgeInsets.all(15),
       child: TextField(
+        maxLength: 1,
         decoration: const InputDecoration(
           border: OutlineInputBorder(),
           labelText: 'Emoji',

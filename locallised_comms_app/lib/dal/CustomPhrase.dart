@@ -55,6 +55,20 @@ class CustomPhrase {
     return file.writeAsString(phrasesString, flush: true);
   }
 
+  Future<File> deleteCustomPhrase(Phrase phrase) async {
+    List<Phrase> phrases = await read();
+    Phrase phraseToDelete =
+        phrases.firstWhere((element) => element.phrase == phrase.phrase);
+    phrases.remove(phraseToDelete);
+
+    final file = await _localFile;
+    if (phrase.phraseMode == Mode.image) {
+      await File(phrase.decal).delete();
+    }
+    String phrasesString = jsonEncode(phrases);
+    return file.writeAsString(phrasesString, flush: true);
+  }
+
   Future<bool> exists() async {
     final file = await _localFile;
     return file.exists();
