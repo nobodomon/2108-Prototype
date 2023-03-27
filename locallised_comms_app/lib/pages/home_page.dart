@@ -176,20 +176,30 @@ class _HomePageState extends State<HomePage> {
       floatingActionButton: Column(
         mainAxisAlignment: MainAxisAlignment.end,
         children: [
-          FloatingActionButton(
-            onPressed: () async {
-              await _speak(context);
-            },
-            child: const Icon(
-              Icons.speaker,
-            ),
+          Container(
+            height:100.0,
+            width: 100.0,
+            child: FittedBox(
+              child: FloatingActionButton(
+                onPressed: () async {
+                  await _speak(context);
+                },
+                child: const Icon(
+                  Icons.speaker,
+                ),
+              ),
+            )
           ),
           const SizedBox(
             height: 10,
           ),
-          FloatingActionButton(
-            onPressed: () async => {
-              await Share.share(input).then((value) => {
+          Container(
+            height:100.0,
+            width: 100.0,
+            child: FittedBox(
+              child: FloatingActionButton(
+                onPressed: () async => {
+                  await Share.share(input).then((value) => {
                     setState(() {
                       textController.text = "";
                       currentWord = "";
@@ -197,10 +207,12 @@ class _HomePageState extends State<HomePage> {
                       end = 0;
                     }),
                   })
-            },
-            tooltip: 'Add Phrase Pack',
-            child: Icon(Icons.share),
-          ),
+                },
+                tooltip: 'Share',
+                child: Icon(Icons.share),
+              ),
+            )
+          )
         ],
       ),
       drawer: Drawer(
@@ -236,9 +248,13 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           )),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          return _MobileLayout(context);
+      body: OrientationBuilder(
+        builder: (context, orientation) {
+          if (orientation == Orientation.portrait) {
+            return _MobileLayout(context);
+          } else {
+            return _DesktopLayout(context);
+          }
         },
       ),
     );
@@ -246,16 +262,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _DesktopLayout(context) {
     return Column(children: [
-      ConstrainedBox(
-        constraints: const BoxConstraints(maxHeight: 100),
-        child: Padding(
-          padding: const EdgeInsets.all(15),
-          child: Flex(
-            direction: Axis.horizontal,
-            children: [],
-          ),
-        ),
-      ),
+      _bottomTextBar(),
       Expanded(
         child: PageView(
           controller: _pageController,
@@ -276,11 +283,15 @@ class _HomePageState extends State<HomePage> {
               setup: widget.setup,
               appendTextField: appendTextField,
             ),
-            const Center(child: Text("Voice Packs will appear here")),
+            AddPackLayout(
+              isPhrasePackAdded: isPhrasePackAdded,
+              isMobile: false,
+              setup: widget.setup,
+              addPhrasePack: () => {addPhrasePack(context)},
+            )
           ],
         ),
       ),
-      _bottomTextBar()
     ]);
   }
 
