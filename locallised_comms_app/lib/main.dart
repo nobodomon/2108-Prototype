@@ -5,6 +5,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 import 'package:locallised_comms_app/components/phrase_button.dart';
 import 'package:locallised_comms_app/pages/add_phrase.dart';
+import 'package:locallised_comms_app/pages/first_time_setup.dart';
 import 'package:locallised_comms_app/pages/home_page.dart';
 import 'package:locallised_comms_app/pages/remove_phrase.dart';
 import 'package:path_provider/path_provider.dart';
@@ -78,7 +79,9 @@ class _MyAppState extends State<MyApp> {
               },
               future: setup),
           '/add-phrase': (context) => const AddPhrase(),
-          '/remove-phrase': (context) => const RemovePhrase()
+          '/remove-phrase': (context) => const RemovePhrase(),
+          '/first-time-setup': (context) => FirstTimeSetup(
+              title: 'First Time Setup', setupCallback: setupCompleteCallback)
         },
         title: 'Flutter Demo',
         theme: ThemeData(

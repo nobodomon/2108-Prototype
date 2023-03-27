@@ -173,16 +173,35 @@ class _HomePageState extends State<HomePage> {
       appBar: AppBar(
         title: Text(widget.title),
       ),
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 100),
-        child: FloatingActionButton(
-          onPressed: () async {
-            await _speak(context);
-          },
-          child: const Icon(
-            Icons.speaker,
+      floatingActionButton: Column(
+        mainAxisAlignment: MainAxisAlignment.end,
+        children: [
+          FloatingActionButton(
+            onPressed: () async {
+              await _speak(context);
+            },
+            child: const Icon(
+              Icons.speaker,
+            ),
           ),
-        ),
+          const SizedBox(
+            height: 10,
+          ),
+          FloatingActionButton(
+            onPressed: () async => {
+              await Share.share(input).then((value) => {
+                    setState(() {
+                      textController.text = "";
+                      currentWord = "";
+                      input = "";
+                      end = 0;
+                    }),
+                  })
+            },
+            tooltip: 'Add Phrase Pack',
+            child: Icon(Icons.share),
+          ),
+        ],
       ),
       drawer: Drawer(
           backgroundColor: Theme.of(context).primaryColor,
@@ -207,6 +226,12 @@ class _HomePageState extends State<HomePage> {
                 title: const Text("Remove Phrases"),
                 onTap: () {
                   Navigator.pushNamed(context, '/remove-phrase');
+                },
+              ),
+              ListTile(
+                title: const Text("First Time Setup"),
+                onTap: () {
+                  Navigator.pushNamed(context, '/first-time-setup');
                 },
               ),
             ],
@@ -261,13 +286,7 @@ class _HomePageState extends State<HomePage> {
 
   Widget _MobileLayout(context) {
     return Column(children: [
-      Padding(
-        padding: const EdgeInsets.all(15),
-        child: Flex(
-          direction: Axis.horizontal,
-          children: [],
-        ),
-      ),
+      _bottomTextBar(),
       Expanded(
         child: PageView(
           controller: _pageController,
@@ -297,7 +316,6 @@ class _HomePageState extends State<HomePage> {
           ],
         ),
       ),
-      _bottomTextBar()
     ]);
   }
 
@@ -323,22 +341,6 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             )),
-            Padding(
-              padding: const EdgeInsets.all(5),
-              child: ElevatedButton(
-                child: Icon(Icons.share),
-                onPressed: () async => {
-                  await Share.share(textController.text).then((value) => {
-                        setState(() {
-                          textController.text = "";
-                          currentWord = "";
-                          input = "";
-                          end = 0;
-                        })
-                      })
-                },
-              ),
-            ),
           ],
         ));
   }
