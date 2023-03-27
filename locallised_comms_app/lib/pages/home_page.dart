@@ -24,6 +24,7 @@ class _HomePageState extends State<HomePage> {
   String currentWord = "";
   int index = 0;
   int end = 0;
+  bool isPhrasePackAdded = false;
   TextEditingController textController = TextEditingController();
   PageController _pageController =
       PageController(initialPage: 0, keepPage: false);
@@ -79,6 +80,22 @@ class _HomePageState extends State<HomePage> {
       input += text;
     });
     textController.text = input;
+  }
+
+  void addPhrasePack(context) {
+    setState(() {
+      isPhrasePackAdded = !isPhrasePackAdded;
+    });
+
+    var response =
+        (isPhrasePackAdded ? "Phrase Pack Added" : "Phrase Pack Removed");
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(response),
+        duration: const Duration(seconds: 1),
+        behavior: SnackBarBehavior.fixed,
+      ),
+    );
   }
 
   Future _speak(context) async {
@@ -167,13 +184,36 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+      drawer: Drawer(
+          backgroundColor: Theme.of(context).primaryColor,
+          child: ListView(
+            children: [
+              const DrawerHeader(
+                child: Text("Locallised Comms"),
+              ),
+              ListTile(
+                title: const Text("Setup"),
+                onTap: () {
+                  Navigator.pushNamed(context, '/setup');
+                },
+              ),
+              ListTile(
+                title: const Text("Add Phrase"),
+                onTap: () {
+                  Navigator.pushNamed(context, '/add-phrase');
+                },
+              ),
+              ListTile(
+                title: const Text("Remove Phrases"),
+                onTap: () {
+                  Navigator.pushNamed(context, '/remove-phrase');
+                },
+              ),
+            ],
+          )),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          if (constraints.maxWidth > 600) {
-            return _DesktopLayout(context);
-          } else {
-            return _MobileLayout(context);
-          }
+          return _MobileLayout(context);
         },
       ),
     );
@@ -187,47 +227,7 @@ class _HomePageState extends State<HomePage> {
           padding: const EdgeInsets.all(15),
           child: Flex(
             direction: Axis.horizontal,
-            children: [
-              PhraseButton(
-                onPressed: () => {
-                  Navigator.pushNamed(context, '/setup'),
-                },
-                phrase: "Test",
-                phraseMode: Mode.icon,
-                decal: Icons.settings.codePoint,
-              ),
-              const SizedBox(
-                width: 15,
-              ),
-              PhraseButton(
-                onPressed: () => {
-                  Navigator.pushNamed(context, '/add-phrase'),
-                },
-                phrase: "Test",
-                phraseMode: Mode.icon,
-                decal: Icons.add.codePoint,
-              ),
-              const SizedBox(
-                width: 15,
-              ),
-              PhraseButton(
-                onPressed: () => {
-                  Navigator.pushNamed(context, '/remove-phrase'),
-                },
-                phrase: "Remove",
-                phraseMode: Mode.icon,
-                decal: Icons.remove.codePoint,
-              ),
-              const SizedBox(
-                width: 15,
-              ),
-              PhraseButton(
-                onPressed: () => {tryNext()},
-                phrase: "Test",
-                phraseMode: Mode.icon,
-                decal: Icons.chevron_right.codePoint,
-              ),
-            ],
+            children: [],
           ),
         ),
       ),
@@ -241,6 +241,7 @@ class _HomePageState extends State<HomePage> {
           },
           children: [
             DefaultPhraseLayout(
+              isPhrasePackAdded: isPhrasePackAdded,
               isMobile: false,
               setup: widget.setup,
               appendTextField: appendTextField,
@@ -264,47 +265,7 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.all(15),
         child: Flex(
           direction: Axis.horizontal,
-          children: [
-            PhraseButton(
-              onPressed: () => {
-                Navigator.pushNamed(context, '/setup'),
-              },
-              phrase: "Test",
-              phraseMode: Mode.icon,
-              decal: Icons.settings.codePoint,
-            ),
-            const SizedBox(
-              width: 15,
-            ),
-            PhraseButton(
-              onPressed: () => {
-                Navigator.pushNamed(context, '/add-phrase'),
-              },
-              phrase: "Test",
-              phraseMode: Mode.icon,
-              decal: Icons.add.codePoint,
-            ),
-            const SizedBox(
-              width: 15,
-            ),
-            PhraseButton(
-              onPressed: () => {
-                Navigator.pushNamed(context, '/remove-phrase'),
-              },
-              phrase: "Remove",
-              phraseMode: Mode.icon,
-              decal: Icons.remove.codePoint,
-            ),
-            const SizedBox(
-              width: 15,
-            ),
-            PhraseButton(
-              onPressed: () => {tryNext()},
-              phrase: "Test",
-              phraseMode: Mode.icon,
-              decal: Icons.chevron_right.codePoint,
-            ),
-          ],
+          children: [],
         ),
       ),
       Expanded(
@@ -317,6 +278,7 @@ class _HomePageState extends State<HomePage> {
           },
           children: [
             DefaultPhraseLayout(
+              isPhrasePackAdded: isPhrasePackAdded,
               isMobile: true,
               setup: widget.setup,
               appendTextField: appendTextField,
@@ -326,7 +288,12 @@ class _HomePageState extends State<HomePage> {
               setup: widget.setup,
               appendTextField: appendTextField,
             ),
-            const Center(child: Text("Voice Packs will appear here")),
+            AddPackLayout(
+              isPhrasePackAdded: isPhrasePackAdded,
+              isMobile: true,
+              setup: widget.setup,
+              addPhrasePack: () => {addPhrasePack(context)},
+            )
           ],
         ),
       ),
@@ -359,7 +326,7 @@ class _HomePageState extends State<HomePage> {
             Padding(
               padding: const EdgeInsets.all(5),
               child: ElevatedButton(
-                child: const Text("Whatsapp/Telegram"),
+                child: Icon(Icons.share),
                 onPressed: () async => {
                   await Share.share(textController.text).then((value) => {
                         setState(() {
@@ -378,6 +345,7 @@ class _HomePageState extends State<HomePage> {
 }
 
 class DefaultPhraseLayout extends StatelessWidget {
+  final bool isPhrasePackAdded;
   final Setup setup;
   final bool isMobile;
   final List<List<dynamic>> phrases = [
@@ -387,9 +355,24 @@ class DefaultPhraseLayout extends StatelessWidget {
     ["How are you ", Icons.sentiment_satisfied.codePoint],
     ["Have you eaten ", Icons.food_bank.codePoint],
   ];
+
+  final List<List<dynamic>> phrasesExtended = [
+    ["I want to eat ", Icons.lunch_dining.codePoint],
+    ["I need to go to the toilet ", Icons.bathtub.codePoint],
+    ["I am going to bed ", Icons.bed.codePoint],
+    ["How are you ", Icons.sentiment_satisfied.codePoint],
+    ["Have you eaten ", Icons.food_bank.codePoint],
+    ["I want to eat ", Icons.lunch_dining.codePoint],
+    ["I need to go to the toilet ", Icons.bathtub.codePoint],
+    ["I am going to bed ", Icons.bed.codePoint],
+    ["How are you ", Icons.sentiment_satisfied.codePoint],
+    ["Have you eaten ", Icons.food_bank.codePoint],
+  ];
+
   final Function appendTextField;
   DefaultPhraseLayout(
       {Key? key,
+      required this.isPhrasePackAdded,
       required this.appendTextField,
       required this.setup,
       required this.isMobile})
@@ -401,6 +384,7 @@ class DefaultPhraseLayout extends StatelessWidget {
         const Text(
           "Default Phrases",
           textAlign: TextAlign.start,
+          style: TextStyle(fontSize: 20),
         ),
         Expanded(
           child: GridView.count(
@@ -409,7 +393,8 @@ class DefaultPhraseLayout extends StatelessWidget {
             crossAxisSpacing: 15,
             mainAxisSpacing: 15,
             children: <Widget>[
-              for (List<dynamic> phrase in phrases)
+              for (List<dynamic> phrase
+                  in (isPhrasePackAdded ? phrasesExtended : phrases))
                 Flex(
                   direction: Axis.vertical,
                   children: [
@@ -451,6 +436,7 @@ class CustomPhrasesLayout extends StatelessWidget {
               children: [
                 const Text(
                   "Custom Phrases",
+                  style: TextStyle(fontSize: 20),
                   textAlign: TextAlign.start,
                 ),
                 Expanded(
@@ -483,5 +469,63 @@ class CustomPhrasesLayout extends StatelessWidget {
             );
           }
         });
+  }
+}
+
+class AddPackLayout extends StatelessWidget {
+  final Setup setup;
+  final bool isMobile;
+  final List<List<dynamic>> phrases = [
+    ["Singlish ", Icons.lunch_dining.codePoint],
+    ["Chinese ", Icons.bathtub.codePoint],
+    ["Tiktok trends ", Icons.bed.codePoint],
+  ];
+  final Function addPhrasePack;
+  final bool isPhrasePackAdded;
+
+  handleAddPhrase(context) {
+    addPhrasePack();
+  }
+
+  AddPackLayout(
+      {Key? key,
+      required this.addPhrasePack,
+      required this.isPhrasePackAdded,
+      required this.setup,
+      required this.isMobile})
+      : super(key: key);
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        const Text(
+          "Phrase Packs",
+          textAlign: TextAlign.start,
+          style: TextStyle(fontSize: 20),
+        ),
+        Expanded(
+          child: GridView.count(
+            crossAxisCount: isMobile ? setup.layout : setup.layout * 2,
+            padding: const EdgeInsets.all(15),
+            crossAxisSpacing: 15,
+            mainAxisSpacing: 15,
+            children: <Widget>[
+              for (List<dynamic> phrase in phrases)
+                Flex(
+                  direction: Axis.vertical,
+                  children: [
+                    PhraseButton(
+                      phrase: phrase[0],
+                      decal: phrase[1],
+                      phraseMode: Mode.icon,
+                      onPressed: () => handleAddPhrase(context),
+                    ),
+                  ],
+                ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
