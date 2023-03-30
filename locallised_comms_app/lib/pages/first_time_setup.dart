@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_tts/flutter_tts.dart';
+import 'package:locallised_comms_app/pages/home_page.dart';
 
 import '../dal/SetupDal.dart';
 import '../models/Setup.dart';
@@ -326,7 +327,16 @@ class _FirstTimeSetupState extends State<FirstTimeSetup> {
                 currentStep = currentStep - 1;
               });
             } else {
-              Navigator.pop(context);
+              if(Navigator.canPop(context)){
+                Navigator.pop(context);
+              }else{
+                Setup setup = Setup(
+                    layout: int.parse(layout!),
+                    language: language!,
+                    voice: voice!,
+                    speed: speed!);
+                Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage(title: "Voice Abang", setup: setup)));
+              }
             }
           },
           onStepContinue: () {

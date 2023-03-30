@@ -185,7 +185,7 @@ class _HomePageState extends State<HomePage> {
                   await _speak(context);
                 },
                 child: const Icon(
-                  Icons.speaker,
+                  Icons.record_voice_over_rounded,
                 ),
               ),
             )

@@ -103,7 +103,7 @@ class _MyAppState extends State<MyApp> {
                     },
                     future: SetupDal().read());
               } else {
-                return SetupPage(
+                return FirstTimeSetup(
                     title: widget.title, setupCallback: setupCompleteCallback);
               }
             } else {
